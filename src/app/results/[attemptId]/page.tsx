@@ -32,6 +32,14 @@ export default async function ResultPage({
         </Link>
 
         <div className="flex items-center gap-3">
+          {attempt.test_id && (
+            <Link href={`/mocks/${attempt.test_id}`}>
+              <Button variant="outline" size="sm" className="gap-1.5 text-xs font-bold">
+                <RotateCcw className="w-3.5 h-3.5" />
+                Retake This Test
+              </Button>
+            </Link>
+          )}
           <Link href={`/practice`}>
             <Button variant="outline" size="sm" className="gap-1.5 text-xs font-bold">
               <BookOpen className="w-3.5 h-3.5" />

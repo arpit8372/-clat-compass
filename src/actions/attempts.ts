@@ -67,32 +67,36 @@ export async function startAttemptAction({
     return { attemptId };
   }
 
-  const supabase = createClient();
+// Create attempt in Supabase with incremental attempt_number
+    const { data: latest } = await supabase
+      .from("test_attempts")
+      .select("attempt_number")
+      .eq("user_id", userId)
+      .eq("test_id", testId || null)
+      .order("attempt_number", { ascending: false })
+      .limit(1)
+      .single();
 
-  // Create attempt in Supabase
-  const { data: attempt, error } = await supabase
-    .from("test_attempts")
-    .insert({
-      user_id: userId,
-      test_id: testId || null,
-      mode,
-      status: "in_progress",
-      started_at: new Date().toISOString(),
-      score: 0,
-      total_questions: 0,
-      correct_count: 0,
-      incorrect_count: 0,
-      unattempted_count: 0,
-      accuracy: 0,
-    })
-    .select("id")
-    .single();
+    const nextNumber = (latest?.attempt_number ?? 0) + 1;
 
-  if (error || !attempt) {
-    throw new Error(error?.message || "Failed to start test attempt");
-  }
-
-  return { attemptId: attempt.id };
+    const { data: attempt, error } = await supabase
+      .from("test_attempts")
+      .insert({
+        user_id: userId,
+        test_id: testId || null,
+        mode,
+        status: "in_progress",
+        started_at: new Date().toISOString(),
+        score: 0,
+        total_questions: 0,
+        correct_count: 0,
+        incorrect_count: 0,
+        unattempted_count: 0,
+        accuracy: 0,
+        attempt_number: nextNumber,
+      })
+      .select("id, attempt_number")
+      .single();
 }
 
 export async function saveResponseAction({
